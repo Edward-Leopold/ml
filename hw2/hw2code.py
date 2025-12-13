@@ -1,5 +1,6 @@
 import numpy as np
 from collections import Counter
+from sklearn.base import BaseEstimator, ClassifierMixin
 
 def find_best_split(feature_vector, target_vector):
     feature_values = np.array(feature_vector)
@@ -165,7 +166,7 @@ class DecisionTree:
                 return self._predict_node(x, node["left_child"])
             else:
                 return self._predict_node(x, node["right_child"])
-    
+
     def fit(self, X, y):
         self._fit_node(X, y, self._tree, 0)
         return self
@@ -175,3 +176,15 @@ class DecisionTree:
         for sample in X:
             results.append(self._predict_node(sample, self._tree))
         return np.array(results)
+    
+class DecisionTreeWrapper(BaseEstimator, ClassifierMixin):
+    def __init__(self, feature_types):
+        self.feature_types = feature_types
+
+    def fit(self, X, y):
+        self.tree = DecisionTree(feature_types=self.feature_types)
+        self.tree.fit(X, y)
+        return self
+
+    def predict(self, X):
+        return self.tree.predict(X)
